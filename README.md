@@ -1,4 +1,4 @@
-leap-chrome-extension
+Leap Chrome Extension
 =====================
 
 Chrome extension to use Leap Motion controller for scrolling and zooming web page
