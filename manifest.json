@@ -12,7 +12,7 @@
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
-      "js": ["leap.js", "jquery-1.9.0.min.js", "three.min.js", "leapscroll.js"],
+      "js": ["leap.js", "jquery-1.9.0.min.js", "leapscroll.js"], //, "three.min.js", "leapscroll.js"],
       "all_frames": true
     }
   ],

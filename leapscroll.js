@@ -2,8 +2,10 @@ var lastFrame;
 var TRANSLATION_FACTOR = 20;
 var SMOOTHING_FACTOR = 4;
 
+var scene;
+
 window.onload = function() {
-    initThree();
+    // initThree();
 };
 
 function initThree () {
@@ -35,7 +37,7 @@ function initThree () {
   // add the camera to the scene
   scene.add(camera);
 
-  createSpheres(scene);
+  createSphere(scene);
 
   // create a point light
   var pointLight =
@@ -57,7 +59,7 @@ function initThree () {
   $('body').append(renderer.domElement);
 }
 
-function createSpheres (scene) {
+function createSphere (scene) {
   // set up the sphere vars
   var radius = 10,
       segments = 16,
@@ -70,21 +72,18 @@ function createSpheres (scene) {
         color: 0xCC0000
       });
 
-  for (var i = 0; i < 5; i++) {
-    // create a new mesh with
-    // sphere geometry - we will cover
-    // the sphereMaterial next!
-    var sphere = new THREE.Mesh(
-      new THREE.SphereGeometry(
-        radius,
-        segments,
-        rings),
-      sphereMaterial);
+  // create a new mesh with
+  // sphere geometry - we will cover
+  // the sphereMaterial next!
+  var sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(
+      radius,
+      segments,
+      rings),
+    sphereMaterial);
 
-    // add the sphere to the scene
-    scene.add(sphere);
-    spheres.push(sphere);
-  }
+  // add the sphere to the scene
+  scene.add(sphere);
 }
 
 function render() {
@@ -100,8 +99,7 @@ Leap.loop({enableGestures: true}, function (frame, done) {
   }
 
   if (frame.hands === undefined || frame.hands.length === 0) {
-    $('body').css('transform', 'scale(1.0)');
-    $('body').css('transform', 'rotate(0deg)');
+    $('body').css('transform', 'scale(1.0) rotate(0deg)');
   }
 
   if (frame.gestures && frame.gestures.length > 0) {
@@ -159,14 +157,13 @@ function transformPage(hands) {
   }
 
   var hand = hands[0];
-  $('body').css('transform', 'scale(' + hand._scaleFactor + ')');
-  var rotateXDegree = toDegrees(Math.atan(-hand.palmNormal[0], -hand.palmNormal[1]));
-  $('body').css('transform', 'rotateX(' + rotateXDegree + 'deg)');
+  var rotateDegree = toDegrees(Math.atan(-hand.palmNormal[0], -hand.palmNormal[1]));
+  $('body').css('transform', 'scale(' + hand._scaleFactor + ')' + ' rotateZ(' + rotateDegree + 'deg)');
 }
 
 function browsePage(gestures) {
   if (gestures[0].type === 'swipe' && gestures[0].state === 'stop') {
-    console.log(gestures[0].direction);
+    console.log(gestures[0]);
 
     if (gestures[0].direction[0] > 0) {
       history.forward();
