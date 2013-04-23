@@ -2,7 +2,96 @@ var lastFrame;
 var TRANSLATION_FACTOR = 20;
 var SMOOTHING_FACTOR = 4;
 
-Leap.loop(function (frame) {
+var scene;
+
+window.onload = function() {
+    // initThree();
+};
+
+function initThree () {
+  // set the scene size
+  var WIDTH = $(window).width(),
+    HEIGHT = $(window).height();
+
+  // set some camera attributes
+  var VIEW_ANGLE = 45,
+    ASPECT = WIDTH / HEIGHT,
+    NEAR = 1,
+    FAR = 10000;
+
+  // create a WebGL renderer, camera
+  // and a scene
+  camera =
+    new THREE.PerspectiveCamera(
+      VIEW_ANGLE,
+      ASPECT,
+      NEAR,
+      FAR);
+
+  // the camera starts at 0,0,0
+  // so pull it back
+  camera.position.z = 500;
+
+  scene = new THREE.Scene();
+
+  // add the camera to the scene
+  scene.add(camera);
+
+  createSphere(scene);
+
+  // create a point light
+  var pointLight =
+    new THREE.PointLight(0xFFFFFF);
+
+  // set its position
+  pointLight.position.x = 10;
+  pointLight.position.y = 50;
+  pointLight.position.z = 130;
+
+  // add to the scene
+  scene.add(pointLight);
+
+  // start the renderer
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(WIDTH, HEIGHT);
+
+  // attach the render-supplied DOM element
+  $('body').append(renderer.domElement);
+}
+
+function createSphere (scene) {
+  // set up the sphere vars
+  var radius = 10,
+      segments = 16,
+      rings = 16;
+
+  // create the sphere's material
+  var sphereMaterial =
+    new THREE.MeshLambertMaterial(
+      {
+        color: 0xCC0000
+      });
+
+  // create a new mesh with
+  // sphere geometry - we will cover
+  // the sphereMaterial next!
+  var sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(
+      radius,
+      segments,
+      rings),
+    sphereMaterial);
+
+  // add the sphere to the scene
+  scene.add(sphere);
+}
+
+function render() {
+  requestAnimationFrame(render);
+  renderer.render(scene, camera);
+}
+
+Leap.loop({enableGestures: true}, function (frame, done) {
   // console.log(frame);
 
   if (frame.pointables === undefined) {
@@ -10,18 +99,22 @@ Leap.loop(function (frame) {
   }
 
   if (frame.hands === undefined || frame.hands.length === 0) {
-    document.body.style.zoom = 1.0;
+    $('body').css('transform', 'scale(1.0) rotate(0deg)');
   }
 
-  if (frame.pointables.length === 2) {
+  if (frame.gestures && frame.gestures.length > 0) {
+    browsePage(frame.gestures);
+  } else if (frame.pointables.length === 2) {
     scrollPage(frame.pointables);
   } else if (frame.pointables.length > 2) {
-    zoomPage(frame.hands);
+    transformPage(frame.hands);
   }
 
   if (frame !== undefined && frame.pointables !== undefined && frame.pointables.length > 0) {
     lastFrame = frame;
   }
+
+  done();
 });
 
 function scrollPage (pointables) {
@@ -54,11 +147,28 @@ function scrollPage (pointables) {
   window.scrollBy(hTranslation, vTranslation);
 }
 
-function zoomPage(hands) {
+function toDegrees (angle) {
+  return angle * (180 / Math.PI);
+}
+
+function transformPage(hands) {
   if (hands === undefined || hands.length === 0) {
     return;
   }
 
   var hand = hands[0];
-  document.body.style.zoom = hand._scaleFactor;
+  var rotateDegree = toDegrees(Math.atan(-hand.palmNormal[0], -hand.palmNormal[1]));
+  $('body').css('transform', 'scale(' + hand._scaleFactor + ')' + ' rotateZ(' + rotateDegree + 'deg)');
+}
+
+function browsePage(gestures) {
+  if (gestures[0].type === 'swipe' && gestures[0].state === 'stop') {
+    console.log(gestures[0]);
+
+    if (gestures[0].direction[0] > 0) {
+      history.forward();
+    } else {
+      history.back();
+    }
+  }
 }
